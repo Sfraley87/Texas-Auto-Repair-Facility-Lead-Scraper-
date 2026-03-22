@@ -151,5 +151,7 @@ Built by **Shaun** — AI Automation Architect at [Synelium](https://synelium.co
 
 I design and deploy AI-powered automation systems for mid-market businesses. This workflow is part of a broader lead generation and outreach infrastructure I build for clients in sales-intensive industries.
 
-→ More projects: [github.com/yourusername](https://github.com/yourusername)  
-→ Connect: [linkedin.com/in/yourprofile](https://linkedin.com/in/yourprofile)
+→ More projects: (https://github.com/Sfraley87/ 
+→ Connect: www.linkedin.com/in/shaun-fraley-41a0b9132
+
+
