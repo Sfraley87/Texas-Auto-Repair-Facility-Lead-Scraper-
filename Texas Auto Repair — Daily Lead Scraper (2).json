@@ -1,0 +1,330 @@
+{
+  "name": "Texas Auto Repair — Daily Lead Scraper",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 0 5 * * *"
+            }
+          ]
+        }
+      },
+      "id": "node-schedule",
+      "name": "Schedule Trigger — 5 AM Daily",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.1,
+      "position": [
+        240,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "// Texas Auto Repair — Zip Code Seed List\n// Add or remove zip codes here to expand/contract coverage\nconst zips = [\n  // Houston Metro\n  { city: \"Houston\", zip: \"77002\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77006\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77019\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77025\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77036\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77055\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77077\", region: \"Houston Metro\" },\n  { city: \"Houston\", zip: \"77084\", region: \"Houston Metro\" },\n  { city: \"Pasadena\", zip: \"77502\", region: \"Houston Metro\" },\n  { city: \"Sugar Land\", zip: \"77478\", region: \"Houston Metro\" },\n  // DFW Metro\n  { city: \"Dallas\", zip: \"75201\", region: \"DFW Metro\" },\n  { city: \"Dallas\", zip: \"75211\", region: \"DFW Metro\" },\n  { city: \"Dallas\", zip: \"75228\", region: \"DFW Metro\" },\n  { city: \"Dallas\", zip: \"75243\", region: \"DFW Metro\" },\n  { city: \"Fort Worth\", zip: \"76102\", region: \"DFW Metro\" },\n  { city: \"Fort Worth\", zip: \"76116\", region: \"DFW Metro\" },\n  { city: \"Arlington\", zip: \"76010\", region: \"DFW Metro\" },\n  { city: \"Garland\", zip: \"75040\", region: \"DFW Metro\" },\n  { city: \"Irving\", zip: \"75061\", region: \"DFW Metro\" },\n  { city: \"Plano\", zip: \"75023\", region: \"DFW Metro\" },\n  // Austin Metro\n  { city: \"Austin\", zip: \"78701\", region: \"Austin Metro\" },\n  { city: \"Austin\", zip: \"78723\", region: \"Austin Metro\" },\n  { city: \"Austin\", zip: \"78745\", region: \"Austin Metro\" },\n  { city: \"Austin\", zip: \"78758\", region: \"Austin Metro\" },\n  { city: \"Round Rock\", zip: \"78664\", region: \"Austin Metro\" },\n  { city: \"Cedar Park\", zip: \"78613\", region: \"Austin Metro\" },\n  // San Antonio Metro\n  { city: \"San Antonio\", zip: \"78201\", region: \"San Antonio Metro\" },\n  { city: \"San Antonio\", zip: \"78218\", region: \"San Antonio Metro\" },\n  { city: \"San Antonio\", zip: \"78240\", region: \"San Antonio Metro\" },\n  { city: \"San Antonio\", zip: \"78250\", region: \"San Antonio Metro\" },\n  { city: \"San Antonio\", zip: \"78258\", region: \"San Antonio Metro\" },\n  { city: \"New Braunfels\", zip: \"78130\", region: \"San Antonio Metro\" },\n  // El Paso\n  { city: \"El Paso\", zip: \"79901\", region: \"El Paso\" },\n  { city: \"El Paso\", zip: \"79925\", region: \"El Paso\" },\n  { city: \"El Paso\", zip: \"79936\", region: \"El Paso\" },\n  // West Texas\n  { city: \"Lubbock\", zip: \"79401\", region: \"West Texas\" },\n  { city: \"Lubbock\", zip: \"79423\", region: \"West Texas\" },\n  { city: \"Amarillo\", zip: \"79101\", region: \"West Texas\" },\n  { city: \"Midland\", zip: \"79701\", region: \"West Texas\" },\n  { city: \"Odessa\", zip: \"79761\", region: \"West Texas\" },\n  { city: \"Abilene\", zip: \"79601\", region: \"West Texas\" },\n  // Coastal & South Texas\n  { city: \"Corpus Christi\", zip: \"78401\", region: \"Coastal Bend\" },\n  { city: \"Corpus Christi\", zip: \"78413\", region: \"Coastal Bend\" },\n  { city: \"McAllen\", zip: \"78501\", region: \"Rio Grande Valley\" },\n  { city: \"Brownsville\", zip: \"78520\", region: \"Rio Grande Valley\" },\n  { city: \"Laredo\", zip: \"78040\", region: \"South Texas\" },\n  // Central & East Texas\n  { city: \"Waco\", zip: \"76701\", region: \"Central Texas\" },\n  { city: \"Killeen\", zip: \"76541\", region: \"Central Texas\" },\n  { city: \"Beaumont\", zip: \"77701\", region: \"Southeast Texas\" },\n  { city: \"Tyler\", zip: \"75701\", region: \"East Texas\" }\n];\n\nreturn zips.map(item => ({ json: item }));"
+      },
+      "id": "node-ziplist",
+      "name": "Texas Zip Codes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        480,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://places.googleapis.com/v1/places:searchText",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "gSuiteAdminOAuth2Api",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "X-Goog-Api-Key",
+              "value": "AIzaSyCcyxiH1P5Nhk3hNmrYHpkdioc4yZsK_T8"
+            },
+            {
+              "name": "X-Goog-FieldMask",
+              "value": "places.id,places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.rating,places.userRatingCount,places.websiteUri"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "string",
+        "body": "={{ JSON.stringify({ textQuery: 'auto repair shop in ' + $json.zip + ' ' + $json.city + ' TX', includedType: 'car_repair', maxResultCount: 20 }) }}",
+        "options": {}
+      },
+      "id": "node-places",
+      "name": "Google Places API",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.1,
+      "position": [
+        720,
+        304
+      ],
+      "credentials": {
+        "gSuiteAdminOAuth2Api": {
+          "id": "gbZGvZ1ifnzukrCu",
+          "name": "Google Workspace Admin account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "// Handle Places API (New) response format\nconst places = $json.places || [];\nconst city = $('Texas Zip Codes').item.json.city;\nconst zip = $('Texas Zip Codes').item.json.zip;\nconst region = $('Texas Zip Codes').item.json.region;\n\nif (places.length === 0) {\n  return [];\n}\n\nreturn places.map(place => ({\n  json: {\n    place_id: place.id || '',\n    name: place.displayName?.text || '',\n    address: place.formattedAddress || '',\n    phone_number: place.nationalPhoneNumber || '',\n    website: place.websiteUri || '',\n    rating: place.rating || '',\n    review_count: place.userRatingCount || 0,\n    city: city,\n    zip: zip,\n    region: region,\n    status: 'New',\n    scraped_at: new Date().toISOString().split('T')[0]\n  }\n}));"
+      },
+      "id": "node-split-results",
+      "name": "Split Results",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        960,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "id": "node-loop",
+      "name": "Loop Over Shops",
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        1200,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1cxriQQbI8ktiaALZjFJ5KvapIAqOL7wqnmOGQd6FU8w",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "place_id",
+              "lookupValue": "={{ $json.place_id }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "node-check-sheet",
+      "name": "Check Sheet for Duplicate",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1440,
+        304
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YMrVsZ3fzeceIewo",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict"
+          },
+          "conditions": [
+            {
+              "id": "cond-1",
+              "leftValue": "={{ $json.place_id }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "empty"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "node-if-new",
+      "name": "Is New Lead?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2,
+      "position": [
+        1680,
+        304
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1cxriQQbI8ktiaALZjFJ5KvapIAqOL7wqnmOGQd6FU8w",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Leads",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "place_id": "={{ $('Loop Over Shops').item.json.place_id }}",
+            "name": "={{ $('Loop Over Shops').item.json.name }}",
+            "address": "={{ $('Loop Over Shops').item.json.address }}",
+            "city": "={{ $('Loop Over Shops').item.json.city }}",
+            "zip": "={{ $('Loop Over Shops').item.json.zip }}",
+            "region": "={{ $('Loop Over Shops').item.json.region }}",
+            "rating": "={{ $('Loop Over Shops').item.json.rating }}",
+            "review_count": "={{ $('Loop Over Shops').item.json.review_count }}",
+            "status": "New",
+            "scraped_at": "={{ $('Loop Over Shops').item.json.scraped_at }}"
+          }
+        },
+        "options": {}
+      },
+      "id": "node-append",
+      "name": "Append to Google Sheet",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.4,
+      "position": [
+        1920,
+        208
+      ],
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "YMrVsZ3fzeceIewo",
+          "name": "Google Sheets account 2"
+        }
+      }
+    },
+    {
+      "parameters": {},
+      "id": "node-skip",
+      "name": "Skip — Already Exists",
+      "type": "n8n-nodes-base.noOp",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        432
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Schedule Trigger — 5 AM Daily": {
+      "main": [
+        [
+          {
+            "node": "Texas Zip Codes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Texas Zip Codes": {
+      "main": [
+        [
+          {
+            "node": "Google Places API",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Google Places API": {
+      "main": [
+        [
+          {
+            "node": "Split Results",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Results": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Shops",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Shops": {
+      "main": [
+        [
+          {
+            "node": "Check Sheet for Duplicate",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        []
+      ]
+    },
+    "Check Sheet for Duplicate": {
+      "main": [
+        [
+          {
+            "node": "Is New Lead?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Is New Lead?": {
+      "main": [
+        [
+          {
+            "node": "Append to Google Sheet",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Skip — Already Exists",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "saveManualExecutions": true,
+    "callerPolicy": "workflowsFromSameOwner",
+    "errorWorkflow": "3MnNXwbzvsgM8FzW",
+    "availableInMCP": false
+  },
+  "versionId": "343b8bae-d3fa-43f3-b58b-dd8cc1e2cf8d",
+  "meta": {
+    "instanceId": "41b9538f904e6a4c613136f9059a403582c2aac64350ef0da9fc201fc16cf494"
+  },
+  "id": "Yp83NOPKonHDPUWZ",
+  "tags": []
+}
