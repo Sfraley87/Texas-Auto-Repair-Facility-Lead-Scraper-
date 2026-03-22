@@ -45,7 +45,7 @@
           "parameters": [
             {
               "name": "X-Goog-Api-Key",
-              "value": "AIzaSyCcyxiH1P5Nhk3hNmrYHpkdioc4yZsK_T8"
+              "value": "{{ $env.GOOGLE_PLACES_API_KEY }}"
             },
             {
               "name": "X-Goog-FieldMask",
